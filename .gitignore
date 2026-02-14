@@ -1,0 +1,46 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+# Entornos virtuales (muy importante no subirlos)
+venv/
+.venv/
+env/
+.env
+
+# --- Datos (ETL) ---
+# Ignoramos los CSV generados porque el script los crea.
+# Mantenemos la estructura de carpetas, pero no los archivos pesados.
+*.csv
+*.xlsx
+*.json
+*.xml
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# --- IDEs y Editores ---
+# Configuración específica de VS Code / Antigravity
+.vscode/
+# Por si algún compañero usa PyCharm
+.idea/
+
+# --- Jupyter / Notebooks ---
+# Si usas notebooks para pruebas rápidas
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# --- Logs y Bases de Datos Locales ---
+*.log
+*.sql.gz
+# Si generas backups grandes de la BD, mejor no subirlos
+backups/
+
+# --- SO (Linux/Mac/Windows) ---
+.DS_Store
+Thumbs.db
+
+GEMINI.md
