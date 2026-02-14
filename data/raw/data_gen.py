@@ -91,10 +91,10 @@ for i in range(1, NUM_SALES + 1):
 df_sales = pd.DataFrame(sales_list)
 
 # 5. Exportar a CSV (Raw Layer)
-df_channels.to_csv('channels.csv', index=False)
-df_customers.to_csv('customers.csv', index=False)
-df_products.to_csv('products.csv', index=False)
-df_sales.to_csv('sales.csv', index=False)
+df_channels.to_csv('data/raw/channels.csv', index=False)
+df_customers.to_csv('data/raw/customers.csv', index=False)
+df_products.to_csv('data/raw/products.csv', index=False)
+df_sales.to_csv('data/raw/sales.csv', index=False)
 
 print("✅ Archivos CSV generados exitosamente en la carpeta actual.")
 print(f"Total Ventas: {len(df_sales)}")
