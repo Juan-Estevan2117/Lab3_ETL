@@ -1,0 +1,15 @@
+# Manipulación de datos y generación
+pandas>=2.0.0
+faker>=20.0.0
+
+# Conexión a Base de Datos (MySQL)
+# SQLAlchemy es el estándar para usar con Pandas (df.to_sql)
+sqlalchemy>=2.0.0
+pymysql>=1.1.0
+
+# Gestión de seguridad (Variables de entorno)
+python-dotenv>=1.0.0
+
+# Opcional: Visualización (para la Actividad 4 del Lab)
+matplotlib>=3.7.0
+seaborn>=0.12.0
