@@ -7,20 +7,20 @@ from datetime import datetime, timedelta
 fake = Faker()
 NUM_SALES = 300       # Mínimo 200 requerido [cite: 105]
 NUM_CUSTOMERS = 25    # Mínimo 20 requerido [cite: 107]
-START_DATE = datetime(2025, 1, 1) # Inicio de los 4 meses
+START_DATE = datetime(2025, 1, 1) # Inicio de los 4 meses [cite: 106]
 
 # 1. Generar Canales (Channels)
-# Requisito: 3 canales (2 físicos + 1 online) [cite: 108]
+# Adaptado a Supermercado: 2 Tiendas físicas + 1 App/Web [cite: 108]
 channels_data = [
-    {'channel_id': 1, 'channel': 'Physical Store - Centro'},
-    {'channel_id': 2, 'channel': 'Physical Store - Norte'},
-    {'channel_id': 3, 'channel': 'Online Store'}
+    {'channel_id': 1, 'channel': 'Supermercado - Sede Principal'},
+    {'channel_id': 2, 'channel': 'Supermercado - Express Norte'},
+    {'channel_id': 3, 'channel': 'App Domicilios / Online'}
 ]
 df_channels = pd.DataFrame(channels_data)
 
 # 2. Generar Clientes (Customers)
-# Requisito: 3 países diferentes [cite: 107]
-countries = ['Colombia', 'Mexico', 'Argentina']
+# Mínimo 3 países diferentes [cite: 107]
+countries = ['Colombia', 'Perú', 'Ecuador']
 customers_list = []
 
 for i in range(1, NUM_CUSTOMERS + 1):
@@ -29,53 +29,62 @@ for i in range(1, NUM_CUSTOMERS + 1):
         'name': fake.name(),
         'city': fake.city(),
         'country': random.choice(countries),
-        'age': random.randint(18, 70)
+        'age': random.randint(18, 75)
     })
 df_customers = pd.DataFrame(customers_list)
 
-# 3. Generar Productos (Products)
-# Requisito: Mínimo 4 marcas y 4 categorías [cite: 109]
-# NOTA: Edita esta lista según el escenario de tu grupo (Pág. 6 del PDF)
+# 3. Generar Productos (Products) - ESCENARIO GROCERY CHAIN
+# Requisito: Mínimo 4 marcas y 4 categorías 
 products_data = [
-    # Category: Laptops
-    {'name': 'Laptop Pro 14', 'category': 'Computers', 'brand': 'TechBrand A', 'unit_price': 1200.00},
-    {'name': 'Laptop Air 13', 'category': 'Computers', 'brand': 'TechBrand B', 'unit_price': 950.00},
-    # Category: Peripherals
-    {'name': 'Gaming Mouse', 'category': 'Peripherals', 'brand': 'GamerZ', 'unit_price': 60.00},
-    {'name': 'Mechanical Keyboard', 'category': 'Peripherals', 'brand': 'GamerZ', 'unit_price': 100.00},
-    # Category: Monitors
-    {'name': 'Monitor 27in 4K', 'category': 'Monitors', 'brand': 'ViewBest', 'unit_price': 350.00},
-    {'name': 'Monitor 24in FHD', 'category': 'Monitors', 'brand': 'ViewBest', 'unit_price': 180.00},
-    # Category: Storage
-    {'name': 'SSD 1TB', 'category': 'Storage', 'brand': 'FastDisk', 'unit_price': 120.00},
-    {'name': 'HDD 4TB', 'category': 'Storage', 'brand': 'FastDisk', 'unit_price': 90.00}
+    # Categoría: Dairy (Lácteos) - Marca: FreshFarm
+    {'name': 'Whole Milk 1L', 'category': 'Dairy', 'brand': 'FreshFarm', 'unit_price': 1.20},
+    {'name': 'Greek Yogurt Pack', 'category': 'Dairy', 'brand': 'FreshFarm', 'unit_price': 4.50},
+    {'name': 'Cheddar Cheese Block', 'category': 'Dairy', 'brand': 'FreshFarm', 'unit_price': 5.00},
+    
+    # Categoría: Pantry (Despensa) - Marca: KitchenStaples
+    {'name': 'Basmati Rice 1kg', 'category': 'Pantry', 'brand': 'KitchenStaples', 'unit_price': 2.80},
+    {'name': 'Spaghetti 500g', 'category': 'Pantry', 'brand': 'KitchenStaples', 'unit_price': 1.10},
+    {'name': 'Olive Oil 500ml', 'category': 'Pantry', 'brand': 'KitchenStaples', 'unit_price': 8.50},
+    
+    # Categoría: Produce (Frutas/Verduras) - Marca: GreenValley
+    {'name': 'Bananas Organic (Bunch)', 'category': 'Produce', 'brand': 'GreenValley', 'unit_price': 1.50},
+    {'name': 'Avocado Hass (Unit)', 'category': 'Produce', 'brand': 'GreenValley', 'unit_price': 1.80},
+    {'name': 'Apples Red (1kg)', 'category': 'Produce', 'brand': 'GreenValley', 'unit_price': 3.00},
+    
+    # Categoría: Household (Aseo/Hogar) - Marca: CleanMax
+    {'name': 'Dish Soap 750ml', 'category': 'Household', 'brand': 'CleanMax', 'unit_price': 3.20},
+    {'name': 'Paper Towels (2 Rolls)', 'category': 'Household', 'brand': 'CleanMax', 'unit_price': 2.50},
+    {'name': 'Laundry Detergent 1L', 'category': 'Household', 'brand': 'CleanMax', 'unit_price': 6.00}
 ]
 
-# Añadir IDs y Costo unitario
+# Añadir IDs y Costo unitario (margen menor en supermercados)
 for i, prod in enumerate(products_data, 1):
     prod['product_id'] = i
-    # El costo suele ser menor al precio (ej. 70%)
-    prod['unit_cost'] = round(prod['unit_price'] * 0.70, 2) 
+    # En supermercados el margen suele ser pequeño, el costo es aprox 80-85% del precio
+    prod['unit_cost'] = round(prod['unit_price'] * random.uniform(0.80, 0.85), 2)
 
 df_products = pd.DataFrame(products_data)
 
 # 4. Generar Ventas (Sales)
-# Requisito: 4 meses consecutivos 
 sales_list = []
 
 for i in range(1, NUM_SALES + 1):
-    # Seleccionar aleatoriamente FKs
     prod = random.choice(products_data)
     cust_id = random.randint(1, NUM_CUSTOMERS)
     chan_id = random.randint(1, 3)
     
-    # Fecha aleatoria dentro de 4 meses (120 días)
+    # Fecha aleatoria
     days_offset = random.randint(0, 120)
     sale_date = START_DATE + timedelta(days=days_offset)
     
-    # Cantidad y precio de venta (puede tener un pequeño descuento vs precio lista)
-    qty = random.randint(1, 5)
-    discount = random.uniform(0.9, 1.0) # Entre 90% y 100% del precio original
+    # Cantidad: En supermercado la gente lleva más unidades (1 a 10)
+    qty = random.randint(1, 10)
+    
+    # Descuentos ocasionales
+    discount = 1.0
+    if random.random() < 0.2: # 20% de probabilidad de descuento
+        discount = 0.90 # 10% descuento
+        
     final_price = round(prod['unit_price'] * discount, 2)
     
     sales_list.append({
@@ -96,6 +105,6 @@ df_customers.to_csv('data/raw/customers.csv', index=False)
 df_products.to_csv('data/raw/products.csv', index=False)
 df_sales.to_csv('data/raw/sales.csv', index=False)
 
-print("✅ Archivos CSV generados exitosamente en la carpeta actual.")
+print("✅ Archivos CSV generados exitosamente para GROCERY CHAIN (Grupos 4, 9).")
 print(f"Total Ventas: {len(df_sales)}")
-print(f"Rango de Fechas: {df_sales['sale_date'].min()} a {df_sales['sale_date'].max()}")
+print(f"Categorías: {df_products['category'].unique()}")
