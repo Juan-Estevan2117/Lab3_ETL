@@ -33,7 +33,12 @@ def run_pipeline():
     # 2. Generación de datos sintéticos (Opcional, si no existen)
     if not os.path.exists('data/raw/sales.csv'):
         print("🛠 Generando datos sintéticos...")
-        os.system('python3 data/raw/data_gen.py')
+        try:
+            import subprocess
+            subprocess.run([sys.executable, 'data/raw/data_gen.py'], check=True)
+        except Exception as e:
+            print(f"❌ Error al generar datos: {e}")
+            return
     
     # 3. Crear Estructura de Base de Datos (DDL)
     print("📋 Ejecutando DDL para preparar el esquema...")
