@@ -1,4 +1,6 @@
-# Testing extract.py
+import pandas as pd
+import os
+
 def extract_data(raw_data_path):
     """
     Extrae los datos desde los archivos CSV de la capa cruda.
