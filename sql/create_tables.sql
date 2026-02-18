@@ -1,10 +1,4 @@
 -- -----------------------------------------------------
--- Schema ETL_LAB_3
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `ETL_LAB_3` DEFAULT CHARACTER SET utf8 ;
-USE `ETL_LAB_3` ;
-
--- -----------------------------------------------------
 -- Table `customer`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `customer` (
