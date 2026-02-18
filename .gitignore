@@ -43,4 +43,5 @@ backups/
 .DS_Store
 Thumbs.db
 
+*ipynb
 GEMINI.md
