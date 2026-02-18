@@ -4,12 +4,16 @@ from dotenv import load_dotenv
 
 def dump_warehouse():
     """
-    Genera un archivo .sql (dump) del Data Warehouse en MySQL 
-    y lo guarda en la carpeta data/warehouse.
-    """
-    print("📦 Generando respaldo (dump) del Data Warehouse...")
+    Generates a SQL dump of the MySQL Data Warehouse.
+
+    This function executes the `mysqldump` system command to export the entire
+    database schema and data into a .sql file stored in the 'data/warehouse' directory.
     
-    # Cargar variables de entorno
+    It serves as an automated backup mechanism for the ETL pipeline.
+    """
+    print("📦 Generating Data Warehouse backup (dump)...")
+    
+    # Load Environment Variables
     load_dotenv(override=True)
     DB_USER = os.getenv("DB_USER")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -17,16 +21,16 @@ def dump_warehouse():
     DB_PORT = os.getenv("DB_PORT")
     DB_NAME = os.getenv("DB_NAME")
     
-    # Ruta del archivo de salida
+    # Define Output Path
     output_path = os.path.join('data', 'warehouse', 'warehouse_dump.sql')
     
-    # Asegurar que el directorio de destino exista (aunque ya debería estar)
+    # Ensure the destination directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
-    # Comando mysqldump
-    # Usamos subprocess.run para mayor control
-    # --column-statistics=0 se agrega para compatibilidad con versiones antiguas de mysqldump/servidor
-    # --skip-comments para un dump más limpio
+    # Construct mysqldump command
+    # subprocess.run is used for secure execution.
+    # --column-statistics=0: Added for compatibility with older mysqldump versions.
+    # --skip-comments: Generates a cleaner dump file.
     command = [
         'mysqldump',
         f'--user={DB_USER}',
@@ -40,23 +44,23 @@ def dump_warehouse():
     ]
     
     try:
-        # Ejecutamos el comando y redirigimos la salida al archivo
+        # Execute command and redirect stdout to the file
         with open(output_path, 'w') as f:
             process = subprocess.run(command, stdout=f, stderr=subprocess.PIPE, text=True)
             
         if process.returncode == 0:
-            print(f"✅ Dump generado exitosamente en: {output_path}")
+            print(f"✅ Dump generated successfully at: {output_path}")
         else:
-            # mysqldump suele dar un aviso sobre contraseñas en CLI, lo cual es normal
-            # pero si el código de retorno no es 0, hay un error real
+            # mysqldump often warns about passwords on CLI, which is expected.
+            # However, if return code is non-zero, it's a real error.
             if "Using a password on the command line interface can be insecure" in process.stderr and process.returncode == 0:
-                print(f"✅ Dump generado exitosamente en: {output_path}")
+                print(f"✅ Dump generated successfully at: {output_path}")
             else:
-                print(f"❌ Error al generar el dump: {process.stderr}")
+                print(f"❌ Error generating dump: {process.stderr}")
                 
     except Exception as e:
-        print(f"❌ Error inesperado durante el dump: {e}")
+        print(f"❌ Unexpected error during dump: {e}")
 
 if __name__ == "__main__":
-    # Si se ejecuta directamente, realiza el dump
+    # If run directly, perform the dump
     dump_warehouse()

@@ -6,11 +6,25 @@ from urllib.parse import quote_plus
 
 def load_data(dim_channel, dim_customer, dim_product, dim_date, fact_sale):
     """
-    Carga los datos transformados a la base de datos MySQL.
-    """
-    print("Iniciando proceso de Carga (Load)...")
+    Loads transformed data into the MySQL Data Warehouse.
+
+    This function establishes a connection to the database and appends the 
+    DataFrame content to the corresponding tables. It strictly follows a 
+    specific order to satisfy Foreign Key constraints.
+
+    Args:
+        dim_channel (pd.DataFrame): Transformed Channel dimension data.
+        dim_customer (pd.DataFrame): Transformed Customer dimension data.
+        dim_product (pd.DataFrame): Transformed Product dimension data.
+        dim_date (pd.DataFrame): Transformed Date dimension data.
+        fact_sale (pd.DataFrame): Transformed Fact table data.
     
-    # Cargar variables de entorno dentro de la función para asegurar frescura
+    Raises:
+        Exception: Propagates any error that occurs during the database transaction.
+    """
+    print("Starting Load process (Load)...")
+    
+    # Reload environment variables to ensure fresh configuration
     load_dotenv(override=True)
     DB_USER = os.getenv("DB_USER")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -20,29 +34,29 @@ def load_data(dim_channel, dim_customer, dim_product, dim_date, fact_sale):
 
     encoded_password = quote_plus(DB_PASSWORD)
     
-    # Conexión al motor MySQL
+    # Create SQLAlchemy engine connection
     engine = create_engine(f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
     
     try:
-        # Cargar dimensiones primero (orden importante por Foreign Keys)
+        # Load Dimension Tables first (Critical for Referential Integrity)
         dim_channel.to_sql('channel', con=engine, if_exists='append', index=False)
-        print(" -> Tabla 'channel' cargada.")
+        print(" -> Table 'channel' loaded.")
         
         dim_customer.to_sql('customer', con=engine, if_exists='append', index=False)
-        print(" -> Tabla 'customer' cargada.")
+        print(" -> Table 'customer' loaded.")
         
         dim_product.to_sql('product', con=engine, if_exists='append', index=False)
-        print(" -> Tabla 'product' cargada.")
+        print(" -> Table 'product' loaded.")
         
         dim_date.to_sql('date', con=engine, if_exists='append', index=False)
-        print(" -> Tabla 'date' cargada.")
+        print(" -> Table 'date' loaded.")
         
-        # Cargar tabla de hechos al final
+        # Load Fact Table last
         fact_sale.to_sql('sale', con=engine, if_exists='append', index=False)
-        print(" -> Tabla de hechos 'sale' cargada.")
+        print(" -> Fact Table 'sale' loaded.")
         
-        print("✅ Carga completada con éxito.")
+        print("✅ Load completed successfully.")
         
     except Exception as e:
-        print(f"Error durante la carga: {e}")
+        print(f"Error during load: {e}")
         raise e

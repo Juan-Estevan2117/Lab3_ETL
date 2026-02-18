@@ -1,31 +1,56 @@
--- 1. Volumen de ventas e ingresos por categoría de producto 
+-- =========================================================
+-- Business Intelligence SQL Queries
+-- Lab 3 - ETL & BI
+-- These queries correspond to the business questions defined in the requirements.
+-- =========================================================
+
+-- ---------------------------------------------------------
+-- Query 1: Sales Volume and Revenue by Product Category
+-- ---------------------------------------------------------
+-- Objective: Identify which product categories perform best in terms of
+-- both volume (units sold) and total revenue generated.
 SELECT p.category, 
        SUM(s.quantity) AS sales_volume, 
-       SUM(s.quantity * s.unit_price_sale) AS total_revenue
+       SUM(s.total_amount) AS revenue
 FROM sale s
 JOIN product p ON s.product_idproduct = p.id_product
-GROUP BY p.category;
+GROUP BY p.category
+ORDER BY revenue DESC;
 
--- 2. Canales de venta que generan mayores ingresos 
+-- ---------------------------------------------------------
+-- Query 2: Revenue by Sales Channel
+-- ---------------------------------------------------------
+-- Objective: Compare the performance of Physical Stores vs. Online Sales
+-- to determine the most effective revenue stream.
 SELECT c.channel, 
-       SUM(s.quantity * s.unit_price_sale) AS total_revenue
+       SUM(s.total_amount) AS revenue
 FROM sale s
 JOIN channel c ON s.channel_idchannel = c.id_channel
 GROUP BY c.channel
-ORDER BY total_revenue DESC;
+ORDER BY revenue DESC;
 
--- 3. Evolución de ventas en el tiempo (tendencia mensual) 
-SELECT d.year, d.month, 
-       SUM(s.quantity * s.unit_price_sale) AS total_revenue
+-- ---------------------------------------------------------
+-- Query 3: Monthly Sales Trend (Revenue & Profit)
+-- ---------------------------------------------------------
+-- Objective: Analyze the evolution of sales over time to identify seasonal
+-- patterns and compare gross revenue against net profit.
+SELECT d.month, 
+       SUM(s.total_amount) AS revenue,
+       SUM(s.profit) AS profit
 FROM sale s
 JOIN date d ON s.date_iddate = d.id_date
-GROUP BY d.year, d.month
-ORDER BY d.year, d.month;
+GROUP BY d.month
+ORDER BY d.month;
 
--- 4. Marcas más rentables (Ganancia = Ingresos - Costos) 
+-- ---------------------------------------------------------
+-- Query 4: Most Profitable Brands (Top 10)
+-- ---------------------------------------------------------
+-- Objective: Identify which brands generate the highest net profit.
+-- This differs from revenue as it accounts for the cost of goods sold.
 SELECT p.brand, 
-       SUM(s.quantity * (s.unit_price_sale - p.unit_cost)) AS total_profit
+       SUM(s.profit) AS total_profit
 FROM sale s
 JOIN product p ON s.product_idproduct = p.id_product
 GROUP BY p.brand
-ORDER BY total_profit DESC;
+ORDER BY total_profit DESC
+LIMIT 10;
