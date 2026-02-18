@@ -76,7 +76,7 @@ def create_dashboard():
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         
         # Save the dashboard
-        output_path = 'visualization/dashboard_kpis.png'
+        output_path = 'visualization/dashboard_kpis.svg'
         plt.savefig(output_path)
         print(f"✅ Dashboard generado exitosamente en: {output_path}")
         
