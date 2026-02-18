@@ -12,10 +12,19 @@ plt.rcParams['figure.figsize'] = (12, 8)
 
 def create_dashboard():
     """
-    Generates a visual dashboard by reading SQL queries from the sql/queries.sql file.
-    Ensures consistency between lab documentation and implementation.
+    Generates a visual dashboard with business KPIs.
+
+    This function connects to the MySQL Data Warehouse, executes the queries defined
+    in `sql/queries.sql`, and creates a multi-chart dashboard using Seaborn and Matplotlib.
+    The final dashboard is saved as an image file.
+    
+    The dashboard includes:
+    1. Total Revenue by Product Category.
+    2. Monthly Trend of Revenue vs. Profit.
+    3. Revenue Distribution by Sales Channel.
+    4. Most Profitable Brands.
     """
-    print("Iniciando generación de Dashboard de Visualización...")
+    print("Starting Visualization Dashboard generation...")
     
     # Load environment variables
     load_dotenv()
@@ -31,6 +40,7 @@ def create_dashboard():
     try:
         # --- LOAD QUERIES FROM THE SQL FILE ---
         # The script parses the sql/queries.sql file to avoid hardcoded redundancy.
+        # It assumes queries are separated by semicolons.
         with open('sql/queries.sql', 'r') as f:
             sql_file_content = f.read()
             # Split by semicolon and clean each query
@@ -50,38 +60,38 @@ def create_dashboard():
 
         # --- DASHBOARD CREATION ---
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-        fig.suptitle('Dashboard de Inteligencia de Negocios - Supermercado "AbastoYa"', fontsize=20, fontweight='bold')
+        fig.suptitle('Business Intelligence Dashboard - "AbastoYa" Retail', fontsize=20, fontweight='bold')
 
         # Chart 1: Revenue by Category
         sns.barplot(data=df_cat, x='revenue', y='category', ax=axes[0, 0], palette='viridis', hue='category', legend=False)
-        axes[0, 0].set_title('Ingresos Totales por Categoría', fontsize=14)
-        axes[0, 0].set_xlabel('Ingresos ($)')
+        axes[0, 0].set_title('Total Revenue by Category', fontsize=14)
+        axes[0, 0].set_xlabel('Revenue ($)')
 
         # Chart 2: Monthly Evolution (Revenue vs Profit)
-        sns.lineplot(data=df_trend, x='month', y='revenue', marker='o', ax=axes[0, 1], label='Ingresos', color='blue')
-        sns.lineplot(data=df_trend, x='month', y='profit', marker='s', ax=axes[0, 1], label='Ganancia', color='green')
-        axes[0, 1].set_title('Tendencia Mensual: Ingresos vs Ganancias', fontsize=14)
+        sns.lineplot(data=df_trend, x='month', y='revenue', marker='o', ax=axes[0, 1], label='Revenue', color='blue')
+        sns.lineplot(data=df_trend, x='month', y='profit', marker='s', ax=axes[0, 1], label='Profit', color='green')
+        axes[0, 1].set_title('Monthly Trend: Revenue vs Profit', fontsize=14)
         axes[0, 1].set_xticks(df_trend['month'])
         axes[0, 1].legend()
 
         # Chart 3: Channel Distribution (Pie Chart)
         axes[1, 0].pie(df_channel['revenue'], labels=df_channel['channel'], autopct='%1.1f%%', colors=sns.color_palette('pastel'))
-        axes[1, 0].set_title('Distribución de Ingresos por Canal', fontsize=14)
+        axes[1, 0].set_title('Revenue Distribution by Channel', fontsize=14)
 
         # Chart 4: Most Profitable Brands (Fulfilling Req. 4 from PDF)
         sns.barplot(data=df_brands, x='total_profit', y='brand', ax=axes[1, 1], palette='flare', hue='brand', legend=False)
-        axes[1, 1].set_title('Marcas más Rentables (Ganancia Total)', fontsize=14)
-        axes[1, 1].set_xlabel('Ganancia ($)')
+        axes[1, 1].set_title('Most Profitable Brands (Total Profit)', fontsize=14)
+        axes[1, 1].set_xlabel('Profit ($)')
 
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         
         # Save the dashboard
-        output_path = 'visualization/dashboard_kpis.svg'
+        output_path = 'visualization/dashboard_kpis.png'
         plt.savefig(output_path)
-        print(f"✅ Dashboard generado exitosamente en: {output_path}")
+        print(f"✅ Dashboard generated successfully at: {output_path}")
         
     except Exception as e:
-        print(f"Error al generar el dashboard: {e}")
+        print(f"Error generating dashboard: {e}")
 
 if __name__ == "__main__":
     create_dashboard()
