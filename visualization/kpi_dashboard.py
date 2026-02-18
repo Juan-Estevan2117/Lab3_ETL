@@ -6,17 +6,18 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
 
-# Configuración de estilos
+# Styling
 sns.set_theme(style="whitegrid")
 plt.rcParams['figure.figsize'] = (12, 8)
 
 def create_dashboard():
     """
-    Genera un dashboard visual con los KPIs críticos del negocio.
+    Generates a visual dashboard by reading SQL queries from the sql/queries.sql file.
+    Ensures consistency between lab documentation and implementation.
     """
     print("Iniciando generación de Dashboard de Visualización...")
     
-    # Cargar variables de entorno
+    # Load environment variables
     load_dotenv()
     DB_USER = os.getenv("DB_USER")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -28,64 +29,53 @@ def create_dashboard():
     engine = create_engine(f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
     
     try:
-        # --- CONSULTAS ---
+        # --- LOAD QUERIES FROM THE SQL FILE ---
+        # The script parses the sql/queries.sql file to avoid hardcoded redundancy.
+        with open('sql/queries.sql', 'r') as f:
+            sql_file_content = f.read()
+            # Split by semicolon and clean each query
+            raw_queries = [q.strip() for q in sql_file_content.split(';') if q.strip()]
+            
+        # 1. Income by Category (Query 1)
+        df_cat = pd.read_sql(raw_queries[0], con=engine)
         
-        # 1. Ingresos por Categoría
-        df_cat = pd.read_sql("""
-            SELECT p.category, SUM(s.total_amount) AS revenue 
-            FROM sale s JOIN product p ON s.product_idproduct = p.id_product 
-            GROUP BY p.category ORDER BY revenue DESC
-        """, con=engine)
-        
-        # 2. Tendencia de Ventas Mensuales
-        df_trend = pd.read_sql("""
-            SELECT d.month, SUM(s.total_amount) AS revenue, SUM(s.profit) AS profit
-            FROM sale s JOIN date d ON s.date_iddate = d.id_date
-            GROUP BY d.month ORDER BY d.month
-        """, con=engine)
-        
-        # 3. Canales más efectivos
-        df_channel = pd.read_sql("""
-            SELECT c.channel, SUM(s.total_amount) AS revenue
-            FROM sale s JOIN channel c ON s.channel_idchannel = c.id_channel
-            GROUP BY c.channel
-        """, con=engine)
-        
-        # 4. KPI Adicional: Profit Margin per Category
-        df_margin = pd.read_sql("""
-            SELECT p.category, (SUM(s.profit) / SUM(s.total_amount)) * 100 AS margin
-            FROM sale s JOIN product p ON s.product_idproduct = p.id_product
-            GROUP BY p.category ORDER BY margin DESC
-        """, con=engine)
+        # 2. Distribution by Channel (Query 2)
+        df_channel = pd.read_sql(raw_queries[1], con=engine)
 
-        # --- CREACIÓN DEL DASHBOARD ---
+        # 3. Monthly Sales Trend (Query 3)
+        df_trend = pd.read_sql(raw_queries[2], con=engine)
+        
+        # 4. Most Profitable Brands (Query 4) - Replaces previous Category Margin
+        df_brands = pd.read_sql(raw_queries[3], con=engine)
+
+        # --- DASHBOARD CREATION ---
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         fig.suptitle('Dashboard de Inteligencia de Negocios - Supermercado "AbastoYa"', fontsize=20, fontweight='bold')
 
-        # Gráfico 1: Ingresos por Categoría
+        # Chart 1: Revenue by Category
         sns.barplot(data=df_cat, x='revenue', y='category', ax=axes[0, 0], palette='viridis', hue='category', legend=False)
         axes[0, 0].set_title('Ingresos Totales por Categoría', fontsize=14)
         axes[0, 0].set_xlabel('Ingresos ($)')
 
-        # Gráfico 2: Evolución Mensual
+        # Chart 2: Monthly Evolution (Revenue vs Profit)
         sns.lineplot(data=df_trend, x='month', y='revenue', marker='o', ax=axes[0, 1], label='Ingresos', color='blue')
         sns.lineplot(data=df_trend, x='month', y='profit', marker='s', ax=axes[0, 1], label='Ganancia', color='green')
         axes[0, 1].set_title('Tendencia Mensual: Ingresos vs Ganancias', fontsize=14)
         axes[0, 1].set_xticks(df_trend['month'])
         axes[0, 1].legend()
 
-        # Gráfico 3: Distribución por Canal (Pie Chart)
+        # Chart 3: Channel Distribution (Pie Chart)
         axes[1, 0].pie(df_channel['revenue'], labels=df_channel['channel'], autopct='%1.1f%%', colors=sns.color_palette('pastel'))
         axes[1, 0].set_title('Distribución de Ingresos por Canal', fontsize=14)
 
-        # Gráfico 4: Margen de Utilidad por Categoría
-        sns.barplot(data=df_margin, x='margin', y='category', ax=axes[1, 1], palette='magma', hue='category', legend=False)
-        axes[1, 1].set_title('Margen de Utilidad (%) por Categoría', fontsize=14)
-        axes[1, 1].set_xlabel('Margen (%)')
+        # Chart 4: Most Profitable Brands (Fulfilling Req. 4 from PDF)
+        sns.barplot(data=df_brands, x='total_profit', y='brand', ax=axes[1, 1], palette='flare', hue='brand', legend=False)
+        axes[1, 1].set_title('Marcas más Rentables (Ganancia Total)', fontsize=14)
+        axes[1, 1].set_xlabel('Ganancia ($)')
 
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         
-        # Guardar el dashboard
+        # Save the dashboard
         output_path = 'visualization/dashboard_kpis.png'
         plt.savefig(output_path)
         print(f"✅ Dashboard generado exitosamente en: {output_path}")
