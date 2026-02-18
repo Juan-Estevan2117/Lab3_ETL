@@ -18,9 +18,9 @@ env/
 *.json
 *.xml
 data/raw/*
-data/processed/*
+data/warehouse/*
 !data/raw/.gitkeep
-!data/processed/.gitkeep
+!data/warehouse/.gitkeep
 
 # --- IDEs y Editores ---
 # Configuración específica de VS Code / Antigravity
