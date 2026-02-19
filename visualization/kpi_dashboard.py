@@ -51,16 +51,29 @@ def create_dashboard():
         
         # 2. Distribution by Channel (Query 2)
         df_channel = pd.read_sql(raw_queries[1], con=engine)
+        # Translate channel names from Spanish to English
+        channel_map = {
+            'Supermercado - Sede Principal': 'Main Supermarket',
+            'Supermercado - Express Norte': 'North Express Supermarket',
+            'App Domicilios / Online': 'Delivery App / Online'
+        }
+        df_channel['channel'] = df_channel['channel'].replace(channel_map)
 
         # 3. Monthly Sales Trend (Query 3)
         df_trend = pd.read_sql(raw_queries[2], con=engine)
+        # Convert month numbers to English month names
+        month_map = {
+            1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+            7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+        }
+        df_trend['month_name'] = df_trend['month'].map(month_map)
         
         # 4. Most Profitable Brands (Query 4) - Replaces previous Category Margin
         df_brands = pd.read_sql(raw_queries[3], con=engine)
 
         # --- DASHBOARD CREATION ---
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-        fig.suptitle('Business Intelligence Dashboard - "AbastoYa" Retail', fontsize=20, fontweight='bold')
+        fig.suptitle('Business Intelligence Dashboard - AbastoYa Retail', fontsize=20, fontweight='bold')
 
         # Chart 1: Revenue by Category
         sns.barplot(data=df_cat, x='revenue', y='category', ax=axes[0, 0], palette='viridis', hue='category', legend=False)
@@ -68,10 +81,10 @@ def create_dashboard():
         axes[0, 0].set_xlabel('Revenue ($)')
 
         # Chart 2: Monthly Evolution (Revenue vs Profit)
-        sns.lineplot(data=df_trend, x='month', y='revenue', marker='o', ax=axes[0, 1], label='Revenue', color='blue')
-        sns.lineplot(data=df_trend, x='month', y='profit', marker='s', ax=axes[0, 1], label='Profit', color='green')
+        sns.lineplot(data=df_trend, x='month_name', y='revenue', marker='o', ax=axes[0, 1], label='Revenue', color='blue')
+        sns.lineplot(data=df_trend, x='month_name', y='profit', marker='s', ax=axes[0, 1], label='Profit', color='green')
         axes[0, 1].set_title('Monthly Trend: Revenue vs Profit', fontsize=14)
-        axes[0, 1].set_xticks(df_trend['month'])
+        axes[0, 1].set_xlabel('Month')
         axes[0, 1].legend()
 
         # Chart 3: Channel Distribution (Pie Chart)
